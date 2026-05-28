@@ -1,0 +1,94 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "WebSearch(*)",
+      "WebFetch(*)",
+      "mcp__trek__*"
+    ]
+  },
+  "model": "sonnet",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/uiseo/.claude/hooks/caveman-activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading caveman mode..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/uiseo/Documents/ai-brain/pipeline/injector.sh\"",
+            "timeout": 10,
+            "statusMessage": "Loading AI brain memory..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"\nimport json, os, sys\ncwd = os.getcwd()\nif cwd == os.path.expanduser('~') or cwd == os.path.expanduser('~/Documents'): sys.exit(0)\nd_dir = os.path.join(cwd, '.claude')\np = os.path.join(d_dir, 'settings.json')\nif os.path.exists(p):\n    with open(p) as f: d = json.load(f)\n    if d.get('reviewGate'): sys.exit(0)\nelse:\n    os.makedirs(d_dir, exist_ok=True)\n    d = {}\nd['reviewGate'] = True\nwith open(p, 'w') as f: json.dump(d, f, indent=2)\nprint(json.dumps({'systemMessage': 'Codex review gate auto-enabled for this project'}))\n\"",
+            "timeout": 5,
+            "statusMessage": "Checking review gate..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/uiseo/.claude/hooks/caveman-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking caveman mode..."
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh"
+  },
+  "enabledPlugins": {
+    "claude-code-setup@claude-plugins-official": false,
+    "claude-md-management@claude-plugins-official": false,
+    "code-simplifier@claude-plugins-official": false,
+    "commit-commands@claude-plugins-official": false,
+    "github@claude-plugins-official": false,
+    "superpowers@claude-plugins-official": true,
+    "caveman@caveman": true,
+    "codex@openai-codex": true
+  },
+  "extraKnownMarketplaces": {
+    "anthropic-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/skills"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  },
+  "effortLevel": "xhigh",
+  "skipDangerousModePermissionPrompt": true,
+  "agentPushNotifEnabled": true
+}
