@@ -86,6 +86,31 @@ Use this in your Claude settings:
 The refresh interval matters because Claude may not provide rate-limit fields on
 the first frame of a session.
 
+## Refresh Interval
+
+`refreshInterval` controls how often Claude reruns the statusline command. The
+value is in seconds.
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh",
+    "refreshInterval": 60
+  }
+}
+```
+
+Recommended values:
+
+- `30` - more responsive, but runs the script more often
+- `60` - good default for quota, cost, and git state
+- `120` - quieter if you only need occasional updates
+
+The ASCII statusline renders placeholder quota rows when Claude has not provided
+rate-limit data yet. After the next refresh, those placeholders are replaced
+when Claude includes the data.
+
 ## Restore
 
 To switch back later, replace `~/.claude/statusline.sh` with the backup you want:
