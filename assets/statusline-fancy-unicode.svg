@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="168" viewBox="0 0 1120 168" role="img" aria-label="Colored Unicode Claude statusline preview">
+  <rect width="1120" height="168" rx="10" fill="#0d1117"/>
+  <rect x="1" y="1" width="1118" height="166" rx="9" fill="none" stroke="#30363d"/>
+  <style>
+    text { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Apple Color Emoji", "Segoe UI Emoji", monospace; font-size: 18px; dominant-baseline: text-before-edge; }
+    .dim { fill: #8b949e; }
+    .orange { fill: #ff9d3b; }
+    .magenta { fill: #d2a8ff; }
+    .cyan { fill: #79c0ff; }
+    .green { fill: #7ee787; }
+    .yellow { fill: #f2cc60; }
+    .red { fill: #ff7b72; }
+    .blue { fill: #58a6ff; }
+    .white { fill: #c9d1d9; }
+  </style>
+  <text x="24" y="24">
+    <tspan class="orange">[CAVEMAN:ULTRA]</tspan><tspan class="dim"> │ </tspan><tspan class="magenta">✦ Sonnet 4.6</tspan><tspan class="dim"> │ </tspan><tspan class="yellow">███████░░░░░ 58%</tspan><tspan class="dim">/200k │ </tspan><tspan class="green">💰 $0.123</tspan><tspan class="dim"> │ ⌛ 12m04s</tspan>
+  </text>
+  <text x="24" y="58">
+    <tspan class="blue">📁 agent-statusline</tspan><tspan class="dim"> on </tspan><tspan class="cyan">⎇ chore/save-statusline-backup</tspan><tspan class="green"> ✔ clean</tspan>
+  </text>
+  <text x="24" y="92">
+    <tspan class="magenta">✨</tspan><tspan class="dim"> 5h </tspan><tspan class="green">▪▪▪·····  37%</tspan><tspan class="dim"> resets </tspan><tspan class="cyan">13h19m</tspan><tspan class="dim"> │ 7d </tspan><tspan class="cyan">▪·······  14%</tspan><tspan class="dim"> resets </tspan><tspan class="cyan">  5d4h</tspan>
+  </text>
+  <text x="24" y="126">
+    <tspan class="magenta">🧠</tspan><tspan class="dim"> 5h </tspan><tspan class="yellow">▪▪▪▪▪▪··  72%</tspan><tspan class="dim"> resets </tspan><tspan class="cyan"> 1h38m</tspan><tspan class="dim"> │ 7d </tspan><tspan class="green">▪▪▪·····  37%</tspan><tspan class="dim"> resets </tspan><tspan class="cyan">2d13h</tspan>
+  </text>
+</svg>

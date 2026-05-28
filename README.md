@@ -40,6 +40,8 @@ The current version uses:
 </> 5h [######--]  72% ->  1h38m | 7d [###-----]  37% ->  2d13h
 ```
 
+![Colored ASCII statusline preview](assets/statusline-ascii.svg)
+
 `statusline.fancy-unicode.sh`
 
 ```text
@@ -48,6 +50,8 @@ The current version uses:
 ✨ 5h ▪▪▪·····  37% resets 13h19m │ 7d ▪·······  14% resets   5d4h
 🧠 5h ▪▪▪▪▪▪··  72% resets  1h38m │ 7d ▪▪▪·····  37% resets  2d13h
 ```
+
+![Colored Unicode statusline preview](assets/statusline-fancy-unicode.svg)
 
 ## Install
 
