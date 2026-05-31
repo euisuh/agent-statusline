@@ -27,6 +27,7 @@ The current version uses:
 - ANSI color for emphasis
 - fixed-width bars like `[#######-----]`
 - aligned quota rows for Claude and Codex
+- reset timers stay visible when a quota bucket is fully used
 - a refresh interval so the line updates during a session
 
 ## Preview
