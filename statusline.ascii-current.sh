@@ -338,11 +338,8 @@ if [ -n "$CODEX_QUOTA" ] && echo "$CODEX_QUOTA" | python3 -c "import sys,json; d
   CX_LIM=$(echo "$CODEX_QUOTA"      | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['limit_reached'])")
 
   if [ "$CX_LIM" = "True" ]; then
-    CX_PRI_INT=$(echo "$CX_PRI" | cut -d. -f1)
-    CX_SEC_INT=$(echo "$CX_SEC" | cut -d. -f1)
-    if [ "$CX_PRI_INT" -lt 100 ] && [ "$CX_SEC_INT" -lt 100 ]; then
-      CX_PRI=100
-    fi
+    [ "$(echo "$CX_PRI" | cut -d. -f1)" -lt 100 ] 2>/dev/null && CX_PRI=100
+    [ "$(echo "$CX_SEC" | cut -d. -f1)" -lt 100 ] 2>/dev/null && CX_SEC=100
   fi
 
   # Time-paced color — same logic as Claude
