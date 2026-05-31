@@ -218,7 +218,7 @@ fmt_reset() {
 # Helper: rate limit bar (8 chars)
 rl_bar() {
   local pct="${1:-0}"
-  local pct_int=$(echo "$pct" | cut -d. -f1)
+  local pct_int=$(pct_int "$pct")
   local filled=$(( pct_int * 8 / 100 ))
   [ "$filled" -gt 8 ] && filled=8
   [ "$filled" -lt 0 ] && filled=0
@@ -233,7 +233,7 @@ rl_bar() {
 
 # Helper: color for rate limit (simple threshold fallback)
 rl_color() {
-  local pct_int=$(echo "${1:-0}" | cut -d. -f1)
+  local pct_int=$(pct_int "$1")
   if   [ "$pct_int" -ge 80 ]; then echo "$RED"
   elif [ "$pct_int" -ge 50 ]; then echo "$YELLOW"
   else echo "$GREEN"; fi
@@ -242,7 +242,7 @@ rl_color() {
 # Helper: time-paced color — green=under, yellow=on, red=over schedule
 # Args: usage_pct reset_at_epoch window_secs
 rl_color_timed() {
-  local usage_int=$(echo "${1:-0}" | cut -d. -f1)
+  local usage_int=$(pct_int "$1")
   local reset_at="${2:-0}"
   local window="${3:-18000}"
   if [ -n "$reset_at" ] && [ "$reset_at" -gt 0 ] 2>/dev/null; then
@@ -261,8 +261,21 @@ rl_color_timed() {
   fi
 }
 
-# ── Helper: format pct with fixed 3-char width ───────────
-fmt_pct() { local v=$(( ${1%%.*} > 999 ? 999 : (${1%%.*} < 0 ? 0 : ${1%%.*}) )); printf "%3d%%" "$v"; }
+# ── Helper: safe integer pct + fixed 3-char format ───────
+pct_int() {
+  local v="${1:-0}"
+  v="${v%%.*}"
+  [[ "$v" =~ ^-?[0-9]+$ ]] || v=0
+  echo "$v"
+}
+
+fmt_pct() {
+  local v
+  v=$(pct_int "$1")
+  [ "$v" -gt 999 ] && v=999
+  [ "$v" -lt 0 ] && v=0
+  printf "%3d%%" "$v"
+}
 
 # ── Helper: fmt seconds (not epoch) ──────────────────────
 fmt_secs() {
@@ -330,8 +343,8 @@ if [ -n "$CODEX_QUOTA" ] && echo "$CODEX_QUOTA" | python3 -c "import sys,json; d
   CX_LIM=$(echo "$CODEX_QUOTA"      | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['limit_reached'])")
 
   if [ "$CX_LIM" = "True" ]; then
-    [ "$(echo "$CX_PRI" | cut -d. -f1)" -lt 100 ] 2>/dev/null && CX_PRI=100
-    [ "$(echo "$CX_SEC" | cut -d. -f1)" -lt 100 ] 2>/dev/null && CX_SEC=100
+    [ "$(pct_int "$CX_PRI")" -lt 100 ] && CX_PRI=100
+    [ "$(pct_int "$CX_SEC")" -lt 100 ] && CX_SEC=100
   fi
 
   # Time-paced color — same logic as Claude
