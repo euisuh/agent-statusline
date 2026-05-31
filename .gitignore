@@ -1,5 +1,6 @@
 .env
 .env.*
 CLAUDE.md
+.claude/
 *.pem
 *.key

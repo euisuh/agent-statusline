@@ -330,18 +330,19 @@ if [ -n "$CODEX_QUOTA" ] && echo "$CODEX_QUOTA" | python3 -c "import sys,json; d
   CX_LIM=$(echo "$CODEX_QUOTA"      | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['limit_reached'])")
 
   if [ "$CX_LIM" = "True" ]; then
-    LINE4="🧠 ${BOLD}${RED}Codex LIMIT REACHED${RESET}"
-  else
-    # Time-paced color — same logic as Claude
-    CX_PRI_COLOR=$(rl_color_timed "$CX_PRI" "$CX_PRI_AT" 18000)
-    CX_PRI_BAR=$(rl_bar "$CX_PRI")
-    CX_SEC_COLOR=$(rl_color_timed "$CX_SEC" "$CX_SEC_AT" 604800)
-    CX_SEC_BAR=$(rl_bar "$CX_SEC")
-
-    LINE4="🧠 ${GRAY}5h ${RESET}${CX_PRI_COLOR}${CX_PRI_BAR} $(fmt_pct $CX_PRI)${RESET} ${GRAY}resets ${RESET}${CYAN}${CX_PRI_RST}${RESET}"
-    LINE4+="$SEP"
-    LINE4+="${GRAY}7d ${RESET}${CX_SEC_COLOR}${CX_SEC_BAR} $(fmt_pct $CX_SEC)${RESET} ${GRAY}resets ${RESET}${CYAN}${CX_SEC_RST}${RESET}"
+    [ "$(echo "$CX_PRI" | cut -d. -f1)" -lt 100 ] 2>/dev/null && CX_PRI=100
+    [ "$(echo "$CX_SEC" | cut -d. -f1)" -lt 100 ] 2>/dev/null && CX_SEC=100
   fi
+
+  # Time-paced color — same logic as Claude
+  CX_PRI_COLOR=$(rl_color_timed "$CX_PRI" "$CX_PRI_AT" 18000)
+  CX_PRI_BAR=$(rl_bar "$CX_PRI")
+  CX_SEC_COLOR=$(rl_color_timed "$CX_SEC" "$CX_SEC_AT" 604800)
+  CX_SEC_BAR=$(rl_bar "$CX_SEC")
+
+  LINE4="🧠 ${GRAY}5h ${RESET}${CX_PRI_COLOR}${CX_PRI_BAR} $(fmt_pct $CX_PRI)${RESET} ${GRAY}resets ${RESET}${CYAN}${CX_PRI_RST}${RESET}"
+  LINE4+="$SEP"
+  LINE4+="${GRAY}7d ${RESET}${CX_SEC_COLOR}${CX_SEC_BAR} $(fmt_pct $CX_SEC)${RESET} ${GRAY}resets ${RESET}${CYAN}${CX_SEC_RST}${RESET}"
 fi
 
 # ── Output ────────────────────────────────────────────────
