@@ -13,6 +13,7 @@ reference if you want to build your own statusline from scratch.
 
 - `statusline.ascii-current.sh` - current fixed-width ASCII statusline
 - `statusline.fancy-unicode.sh` - original Unicode statusline backup
+- `codex_quota.py` - optional script that fetches Codex rate limit quota (LINE4)
 - `settings.example.json` - sanitized Claude settings example
 
 ## What It Shows
@@ -115,6 +116,42 @@ rescan the full Claude usage log every render.
 The ASCII statusline renders placeholder quota rows when Claude has not provided
 rate-limit data yet. After the next refresh, those placeholders are replaced
 when Claude includes the data.
+
+## Codex Quota (LINE4)
+
+The fourth row shows Codex rate limit usage and reset timers. It is optional —
+if the script is missing or errors, LINE4 is simply not rendered.
+
+```text
+</> 5h [######--]  72% ->  1h38m | 7d [###-----]  37% ->  2d13h
+```
+
+### Setup
+
+Copy the script to `~/.claude/`:
+
+```sh
+cp codex_quota.py ~/.claude/codex_quota.py
+```
+
+The script reads credentials from `~/.codex/auth.json`. That file must exist
+with this shape:
+
+```json
+{
+  "tokens": {
+    "access_token": "your-openai-access-token",
+    "account_id": "your-account-id"
+  }
+}
+```
+
+The access token is a bearer token from the ChatGPT backend. The script hits
+`https://chatgpt.com/backend-api/codex/usage` and caches the result for
+5 minutes to avoid hammering the API on every statusline refresh.
+
+If `~/.codex/auth.json` is absent or the token is expired, the script exits
+non-zero and LINE4 is hidden until credentials are restored.
 
 ## Restore
 
