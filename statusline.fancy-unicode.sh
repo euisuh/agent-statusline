@@ -138,6 +138,7 @@ if [ -n "$GIT_DIR" ] && git -C "$GIT_DIR" rev-parse --git-dir &>/dev/null 2>&1; 
       branch_line="${line#'## '}"
       GIT_BRANCH="${branch_line%%...*}"
       GIT_BRANCH="${GIT_BRANCH%% \[*}"
+      GIT_BRANCH="${GIT_BRANCH#No commits yet on }"
       [[ "$GIT_BRANCH" == "HEAD (no branch)" ]] && GIT_BRANCH=$(git -C "$GIT_DIR" --no-optional-locks rev-parse --short HEAD 2>/dev/null)
       if [[ "$branch_line" =~ ahead[[:space:]]([0-9]+) ]]; then GIT_AHEAD="${BASH_REMATCH[1]}"; fi
       if [[ "$branch_line" =~ behind[[:space:]]([0-9]+) ]]; then GIT_BEHIND="${BASH_REMATCH[1]}"; fi
@@ -357,9 +358,9 @@ if [ -f "$USAGE_FILE" ]; then
   else
     MONTHLY_COST=$(grep -h "." "$USAGE_FILE" 2>/dev/null \
       | jq -r --arg m "$THIS_MONTH" \
-        'select(.timestamp | startswith($m)) | .costUSD // .cost_usd // 0' \
+        'select((.timestamp? // "") | startswith($m)) | .costUSD // .cost_usd // 0' \
       | awk '{s+=$1} END {printf "%.3f", s+0}' 2>/dev/null || echo "")
-    [ -n "$MONTHLY_COST" ] && printf "%s|%s|%s\n" "$NOW_EPOCH" "$THIS_MONTH" "$MONTHLY_COST" > "$MONTHLY_CACHE" 2>/dev/null
+    [ -n "$MONTHLY_COST" ] && printf "%s|%s|%s\n" "$NOW_EPOCH" "$THIS_MONTH" "$MONTHLY_COST" > "$MONTHLY_CACHE.tmp" 2>/dev/null && mv "$MONTHLY_CACHE.tmp" "$MONTHLY_CACHE" 2>/dev/null
   fi
   if [ -n "$MONTHLY_COST" ] && [ "$MONTHLY_COST" != "0.000" ]; then
     MONTHLY_INT=$(echo "$MONTHLY_COST" | cut -d. -f1)
@@ -393,10 +394,10 @@ if [ -n "$CODEX_QUOTA" ]; then
       [
         .primary_pct,
         .primary_reset_at,
-        (.primary_reset_secs | fmt_secs),
+        (.primary_reset_secs // 0 | fmt_secs),
         .secondary_pct,
         .secondary_reset_at,
-        (.secondary_reset_secs | fmt_secs),
+        (.secondary_reset_secs // 0 | fmt_secs),
         .limit_reached
       ] | @tsv' <<< "$CODEX_QUOTA" 2>/dev/null
   )
