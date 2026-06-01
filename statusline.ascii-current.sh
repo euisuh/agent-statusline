@@ -30,20 +30,39 @@ ORANGE="\033[38;5;208m"
 TEAL="\033[38;5;36m"
 
 # ── Extract Fields ───────────────────────────────────────
-MODEL=$(echo "$input"        | jq -r '.model.display_name // "unknown"')
-CTX_PCT=$(echo "$input"      | jq -r '.context_window.used_percentage // 0' | cut -d. -f1)
-CTX_SIZE=$(echo "$input"     | jq -r '.context_window.context_window_size // 0')
-COST=$(echo "$input"         | jq -r '.cost.total_cost_usd // 0')
-DURATION_MS=$(echo "$input"  | jq -r '.cost.total_duration_ms // 0')
-LINES_ADD=$(echo "$input"    | jq -r '.cost.total_lines_added // 0')
-LINES_DEL=$(echo "$input"    | jq -r '.cost.total_lines_removed // 0')
-CWD=$(echo "$input"          | jq -r '.workspace.current_dir // ""')
-PROJECT_DIR=$(echo "$input"  | jq -r '.workspace.project_dir // ""')
-WORKTREE=$(echo "$input"     | jq -r '.workspace.git_worktree // ""')
-RL5H_PCT=$(echo "$input"     | jq -r '.rate_limits.five_hour.used_percentage // empty')
-RL5H_RESET=$(echo "$input"   | jq -r '.rate_limits.five_hour.resets_at // empty')
-RL7D_PCT=$(echo "$input"     | jq -r '.rate_limits.seven_day.used_percentage // empty')
-RL7D_RESET=$(echo "$input"   | jq -r '.rate_limits.seven_day.resets_at // empty')
+FIELDS=()
+while IFS= read -r field; do FIELDS+=("$field"); done < <(
+  jq -r '[
+    .model.display_name // "unknown",
+    (.context_window.used_percentage // 0 | tostring | split(".")[0]),
+    .context_window.context_window_size // 0,
+    .cost.total_cost_usd // 0,
+    .cost.total_duration_ms // 0,
+    .cost.total_lines_added // 0,
+    .cost.total_lines_removed // 0,
+    .workspace.current_dir // "",
+    .workspace.project_dir // "",
+    .workspace.git_worktree // "",
+    .rate_limits.five_hour.used_percentage // "",
+    .rate_limits.five_hour.resets_at // "",
+    .rate_limits.seven_day.used_percentage // "",
+    .rate_limits.seven_day.resets_at // ""
+  ][]' <<< "$input"
+)
+MODEL="${FIELDS[0]}"
+CTX_PCT="${FIELDS[1]}"
+CTX_SIZE="${FIELDS[2]}"
+COST="${FIELDS[3]}"
+DURATION_MS="${FIELDS[4]}"
+LINES_ADD="${FIELDS[5]}"
+LINES_DEL="${FIELDS[6]}"
+CWD="${FIELDS[7]}"
+PROJECT_DIR="${FIELDS[8]}"
+WORKTREE="${FIELDS[9]}"
+RL5H_PCT="${FIELDS[10]}"
+RL5H_RESET="${FIELDS[11]}"
+RL7D_PCT="${FIELDS[12]}"
+RL7D_RESET="${FIELDS[13]}"
 
 # ── Derived Values ───────────────────────────────────────
 # Format cost
@@ -116,15 +135,28 @@ IS_GIT=false
 
 if [ -n "$GIT_DIR" ] && git -C "$GIT_DIR" rev-parse --git-dir &>/dev/null 2>&1; then
   IS_GIT=true
-  GIT_BRANCH=$(git -C "$GIT_DIR" --no-optional-locks symbolic-ref --short HEAD 2>/dev/null || git -C "$GIT_DIR" rev-parse --short HEAD 2>/dev/null)
-  GIT_STAGED=$(git -C "$GIT_DIR" --no-optional-locks diff --cached --numstat 2>/dev/null | wc -l | tr -d ' ')
-  GIT_UNSTAGED=$(git -C "$GIT_DIR" --no-optional-locks diff --numstat 2>/dev/null | wc -l | tr -d ' ')
-  GIT_UNTRACKED=$(git -C "$GIT_DIR" --no-optional-locks ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
-  UPSTREAM=$(git -C "$GIT_DIR" --no-optional-locks rev-parse --abbrev-ref '@{upstream}' 2>/dev/null)
-  if [ -n "$UPSTREAM" ]; then
-    GIT_AHEAD=$(git -C "$GIT_DIR" --no-optional-locks rev-list "@{upstream}..HEAD" --count 2>/dev/null || echo 0)
-    GIT_BEHIND=$(git -C "$GIT_DIR" --no-optional-locks rev-list "HEAD..@{upstream}" --count 2>/dev/null || echo 0)
-  fi
+  while IFS= read -r line; do
+    if [[ "$line" == "## "* ]]; then
+      branch_line="${line#'## '}"
+      GIT_BRANCH="${branch_line%%...*}"
+      GIT_BRANCH="${GIT_BRANCH%% \[*}"
+      GIT_BRANCH="${GIT_BRANCH#No commits yet on }"
+      [[ "$GIT_BRANCH" == "HEAD (no branch)" ]] && GIT_BRANCH=$(git -C "$GIT_DIR" --no-optional-locks rev-parse --short HEAD 2>/dev/null)
+      if [[ "$branch_line" =~ ahead[[:space:]]([0-9]+) ]]; then GIT_AHEAD="${BASH_REMATCH[1]}"; fi
+      if [[ "$branch_line" =~ behind[[:space:]]([0-9]+) ]]; then GIT_BEHIND="${BASH_REMATCH[1]}"; fi
+      continue
+    fi
+    status="${line:0:2}"
+    x="${status:0:1}"
+    y="${status:1:1}"
+    if [ "$status" = "??" ]; then
+      GIT_UNTRACKED=$(( GIT_UNTRACKED + 1 ))
+    else
+      [ "$x" != " " ] && GIT_STAGED=$(( GIT_STAGED + 1 ))
+      [ "$y" != " " ] && GIT_UNSTAGED=$(( GIT_UNSTAGED + 1 ))
+    fi
+  done < <(git -C "$GIT_DIR" --no-optional-locks status --porcelain=v1 --branch 2>/dev/null)
+  [ -z "$GIT_BRANCH" ] && GIT_BRANCH=$(git -C "$GIT_DIR" --no-optional-locks symbolic-ref --short HEAD 2>/dev/null || git -C "$GIT_DIR" rev-parse --short HEAD 2>/dev/null)
 fi
 
 # ── Model short name ─────────────────────────────────────
@@ -322,10 +354,23 @@ fi
 USAGE_FILE="$HOME/.claude/usage.jsonl"
 if [ -f "$USAGE_FILE" ]; then
   THIS_MONTH=$(date +%Y-%m)
-  MONTHLY_COST=$(grep -h "." "$USAGE_FILE" 2>/dev/null \
-    | jq -r --arg m "$THIS_MONTH" \
-      'select(.timestamp | startswith($m)) | .costUSD // .cost_usd // 0' \
-    | awk '{s+=$1} END {printf "%.3f", s+0}' 2>/dev/null || echo "")
+  CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/agent-statusline"
+  MONTHLY_CACHE="$CACHE_DIR/monthly-spend"
+  NOW_EPOCH=$(date +%s)
+  CACHE_TS=0
+  CACHE_MONTH=""
+  CACHE_COST=""
+  mkdir -p "$CACHE_DIR" 2>/dev/null
+  [ -r "$MONTHLY_CACHE" ] && IFS='|' read -r CACHE_TS CACHE_MONTH CACHE_COST < "$MONTHLY_CACHE"
+  if [[ "$CACHE_TS" =~ ^[0-9]+$ ]] && [ "$CACHE_MONTH" = "$THIS_MONTH" ] && [ $(( NOW_EPOCH - CACHE_TS )) -lt 60 ]; then
+    MONTHLY_COST="$CACHE_COST"
+  else
+    MONTHLY_COST=$(grep -h "." "$USAGE_FILE" 2>/dev/null \
+      | jq -r --arg m "$THIS_MONTH" \
+        'select((.timestamp? // "") | startswith($m)) | .costUSD // .cost_usd // 0' \
+      | awk '{s+=$1} END {printf "%.3f", s+0}' 2>/dev/null || echo "")
+    [ -n "$MONTHLY_COST" ] && printf "%s|%s|%s\n" "$NOW_EPOCH" "$THIS_MONTH" "$MONTHLY_COST" > "$MONTHLY_CACHE.tmp" 2>/dev/null && mv "$MONTHLY_CACHE.tmp" "$MONTHLY_CACHE" 2>/dev/null
+  fi
   if [ -n "$MONTHLY_COST" ] && [ "$MONTHLY_COST" != "0.000" ]; then
     MONTHLY_INT=$(echo "$MONTHLY_COST" | cut -d. -f1)
     if   [ "$MONTHLY_INT" -ge 50 ]; then MONTHLY_COLOR="$RED"
@@ -341,16 +386,35 @@ fi
 # ── Line 4: Codex Quota ───────────────────────────────────
 LINE4=""
 CODEX_QUOTA=$(python3 "$HOME/.claude/codex_quota.py" 2>/dev/null)
-if [ -n "$CODEX_QUOTA" ] && echo "$CODEX_QUOTA" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if 'primary_pct' in d else 1)" 2>/dev/null; then
-  CX_PRI=$(echo "$CODEX_QUOTA"      | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['primary_pct'])")
-  CX_PRI_AT=$(echo "$CODEX_QUOTA"   | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['primary_reset_at'])")
-  CX_PRI_RST=$(echo "$CODEX_QUOTA"  | python3 -c "import sys,json; d=json.load(sys.stdin); s=d['primary_reset_secs']; d2=s//86400; h=(s%86400)//3600; m=(s%3600)//60; t=f'{d2}d{h}h' if d2>0 else (f'{h}h{m}m' if h>0 else f'{m}m'); print(f'{t:>6}')")
-  CX_SEC=$(echo "$CODEX_QUOTA"      | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['secondary_pct'])")
-  CX_SEC_AT=$(echo "$CODEX_QUOTA"   | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['secondary_reset_at'])")
-  CX_SEC_RST=$(echo "$CODEX_QUOTA"  | python3 -c "import sys,json; d=json.load(sys.stdin); s=d['secondary_reset_secs']; d2=s//86400; h=(s%86400)//3600; m=(s%3600)//60; t=f'{d2}d{h}h' if d2>0 else (f'{h}h{m}m' if h>0 else f'{m}m'); print(f'{t:>6}')")
-  CX_LIM=$(echo "$CODEX_QUOTA"      | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['limit_reached'])")
+if [ -n "$CODEX_QUOTA" ]; then
+  IFS=$'\t' read -r CX_PRI CX_PRI_AT CX_PRI_RST CX_SEC CX_SEC_AT CX_SEC_RST CX_LIM < <(
+    jq -r '
+      def fmt_secs:
+        . as $s
+        | ($s / 86400 | floor) as $d
+        | (($s % 86400) / 3600 | floor) as $h
+        | (($s % 3600) / 60 | floor) as $m
+        | if $d > 0 then "\($d)d\($h)h"
+          elif $h > 0 then "\($h)h\($m)m"
+          else "\($m)m"
+          end;
+      select(has("primary_pct")) |
+      [
+        .primary_pct,
+        .primary_reset_at,
+        (.primary_reset_secs // 0 | fmt_secs),
+        .secondary_pct,
+        .secondary_reset_at,
+        (.secondary_reset_secs // 0 | fmt_secs),
+        .limit_reached
+      ] | @tsv' <<< "$CODEX_QUOTA" 2>/dev/null
+  )
+fi
+if [ -n "$CX_PRI" ]; then
+  CX_PRI_RST=$(printf "%6s" "$CX_PRI_RST")
+  CX_SEC_RST=$(printf "%6s" "$CX_SEC_RST")
 
-  if [ "$CX_LIM" = "True" ]; then
+  if [ "$CX_LIM" = "True" ] || [ "$CX_LIM" = "true" ]; then
     [ "$(pct_int "$CX_PRI")" -lt 100 ] && CX_PRI=100
     [ "$(pct_int "$CX_SEC")" -lt 100 ] && CX_SEC=100
   fi
