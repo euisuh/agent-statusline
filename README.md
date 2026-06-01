@@ -104,9 +104,13 @@ value is in seconds.
 
 Recommended values:
 
+- `1` - live updates, useful if you watch reset timers closely; highest CPU cost
 - `30` - more responsive, but runs the script more often
 - `60` - good default for quota, cost, and git state
 - `120` - quieter if you only need occasional updates
+
+Monthly spend is cached for up to 60 seconds so short refresh intervals do not
+rescan the full Claude usage log every render.
 
 The ASCII statusline renders placeholder quota rows when Claude has not provided
 rate-limit data yet. After the next refresh, those placeholders are replaced
