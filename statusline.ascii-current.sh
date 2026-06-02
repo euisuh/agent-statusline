@@ -445,9 +445,9 @@ if [ -n "$CX_PRI" ]; then
   CX_SEC_COLOR=$(rl_color_timed "$CX_SEC" "$CX_SEC_AT" 604800)
   CX_SEC_BAR=$(rl_bar "$CX_SEC")
 
-  LINE4="${TEAL}</>${RESET} ${GRAY}5h ${RESET}${CX_PRI_COLOR}[${CX_PRI_BAR}] $(fmt_pct $CX_PRI)${RESET} ${GRAY}->${RESET} ${CYAN}${CX_PRI_RST}${RESET}"
+  LINE4="${TEAL}</>${RESET} ${GRAY}5h ${RESET}${CX_PRI_COLOR}[${CX_PRI_BAR}${RESET}${CX_PRI_COLOR}] $(fmt_pct $CX_PRI)${RESET} ${GRAY}->${RESET} ${CYAN}${CX_PRI_RST}${RESET}"
   LINE4+="$SEP"
-  LINE4+="${GRAY}7d ${RESET}${CX_SEC_COLOR}[${CX_SEC_BAR}] $(fmt_pct $CX_SEC)${RESET} ${GRAY}->${RESET} ${CYAN}${CX_SEC_RST}${RESET}"
+  LINE4+="${GRAY}7d ${RESET}${CX_SEC_COLOR}[${CX_SEC_BAR}${RESET}${CX_SEC_COLOR}] $(fmt_pct $CX_SEC)${RESET} ${GRAY}->${RESET} ${CYAN}${CX_SEC_RST}${RESET}"
 fi
 
 # ── Output ────────────────────────────────────────────────
