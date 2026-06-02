@@ -28,6 +28,9 @@ BLUE="\033[94m"
 GRAY="\033[90m"
 ORANGE="\033[38;5;208m"
 TEAL="\033[38;5;36m"
+LIME="\033[38;5;118m"
+GOLD="\033[38;5;220m"
+PINK="\033[38;5;198m"
 
 # ── Extract Fields ───────────────────────────────────────
 FIELDS=()
@@ -269,12 +272,20 @@ rl_bar() {
 # Helper: color for rate limit (simple threshold fallback)
 rl_color() {
   local pct_int=$(pct_int "$1")
-  if   [ "$pct_int" -ge 80 ]; then echo "$RED"
+  if   [ "$pct_int" -ge 98 ]; then echo "$RED"
+  elif [ "$pct_int" -ge 90 ]; then echo "$PINK"
+  elif [ "$pct_int" -ge 80 ]; then echo "$MAGENTA"
+  elif [ "$pct_int" -ge 70 ]; then echo "$ORANGE"
+  elif [ "$pct_int" -ge 60 ]; then echo "$GOLD"
   elif [ "$pct_int" -ge 50 ]; then echo "$YELLOW"
-  else echo "$GREEN"; fi
+  elif [ "$pct_int" -ge 40 ]; then echo "$LIME"
+  elif [ "$pct_int" -ge 30 ]; then echo "$GREEN"
+  elif [ "$pct_int" -ge 20 ]; then echo "$TEAL"
+  elif [ "$pct_int" -ge 10 ]; then echo "$CYAN"
+  else echo "$BLUE"; fi
 }
 
-# Helper: time-paced color — green=under, yellow=on, red=over schedule
+# Helper: time-paced color — cool=under, yellow=on/near, warm=over schedule
 # Args: usage_pct reset_at_epoch window_secs
 rl_color_timed() {
   local usage_int=$(pct_int "$1")
@@ -286,11 +297,17 @@ rl_color_timed() {
     [ "$elapsed" -lt 0 ] && elapsed=0
     local time_pct=$(( elapsed * 100 / window ))
     local delta=$(( usage_int - time_pct ))
-    if   [ "$delta" -gt 30 ]; then echo "$RED"
-    elif [ "$delta" -gt 10 ]; then echo "$MAGENTA"
-    elif [ "$delta" -gt -10 ]; then echo "$YELLOW"
-    elif [ "$delta" -gt -30 ]; then echo "$GREEN"
-    else echo "$CYAN"; fi
+    if   [ "$delta" -gt 40 ]; then echo "$RED"
+    elif [ "$delta" -gt 30 ]; then echo "$PINK"
+    elif [ "$delta" -gt 22 ]; then echo "$MAGENTA"
+    elif [ "$delta" -gt 15 ]; then echo "$ORANGE"
+    elif [ "$delta" -gt 8 ]; then echo "$GOLD"
+    elif [ "$delta" -gt 2 ]; then echo "$YELLOW"
+    elif [ "$delta" -gt -4 ]; then echo "$LIME"
+    elif [ "$delta" -gt -10 ]; then echo "$GREEN"
+    elif [ "$delta" -gt -18 ]; then echo "$TEAL"
+    elif [ "$delta" -gt -28 ]; then echo "$CYAN"
+    else echo "$BLUE"; fi
   else
     rl_color "$1"
   fi
