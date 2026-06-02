@@ -19,18 +19,20 @@ DIM="\033[2m"
 
 # Foregrounds
 WHITE="\033[97m"
-CYAN="\033[96m"
-GREEN="\033[92m"
-YELLOW="\033[93m"
-RED="\033[91m"
-MAGENTA="\033[95m"
-BLUE="\033[94m"
 GRAY="\033[90m"
-ORANGE="\033[38;5;208m"
-TEAL="\033[38;5;36m"
+MAGENTA="\033[95m"
+# Spectrum (blue→cyan→teal→green→lime→yellow→gold→orange→scarlet→red)
+BLUE="\033[38;5;27m"
+CYAN="\033[38;5;33m"
+SKY="\033[38;5;39m"
+TEAL="\033[38;5;44m"
+GREEN="\033[38;5;82m"
 LIME="\033[38;5;118m"
-GOLD="\033[38;5;220m"
-PINK="\033[38;5;198m"
+YELLOW="\033[38;5;226m"
+GOLD="\033[38;5;214m"
+ORANGE="\033[38;5;208m"
+SCARLET="\033[38;5;202m"
+RED="\033[38;5;196m"
 
 # ── Extract Fields ───────────────────────────────────────
 FIELDS=()
@@ -272,14 +274,14 @@ rl_bar() {
 rl_color() {
   local pct_int=$(pct_int "$1")
   if   [ "$pct_int" -ge 98 ]; then echo "$RED"
-  elif [ "$pct_int" -ge 90 ]; then echo "$PINK"
-  elif [ "$pct_int" -ge 80 ]; then echo "$MAGENTA"
-  elif [ "$pct_int" -ge 70 ]; then echo "$ORANGE"
-  elif [ "$pct_int" -ge 60 ]; then echo "$GOLD"
-  elif [ "$pct_int" -ge 50 ]; then echo "$YELLOW"
-  elif [ "$pct_int" -ge 40 ]; then echo "$LIME"
-  elif [ "$pct_int" -ge 30 ]; then echo "$GREEN"
-  elif [ "$pct_int" -ge 20 ]; then echo "$TEAL"
+  elif [ "$pct_int" -ge 90 ]; then echo "$SCARLET"
+  elif [ "$pct_int" -ge 80 ]; then echo "$ORANGE"
+  elif [ "$pct_int" -ge 70 ]; then echo "$GOLD"
+  elif [ "$pct_int" -ge 60 ]; then echo "$YELLOW"
+  elif [ "$pct_int" -ge 50 ]; then echo "$LIME"
+  elif [ "$pct_int" -ge 40 ]; then echo "$GREEN"
+  elif [ "$pct_int" -ge 30 ]; then echo "$TEAL"
+  elif [ "$pct_int" -ge 20 ]; then echo "$SKY"
   elif [ "$pct_int" -ge 10 ]; then echo "$CYAN"
   else echo "$BLUE"; fi
 }
@@ -297,14 +299,14 @@ rl_color_timed() {
     local time_pct=$(( elapsed * 100 / window ))
     local delta=$(( usage_int - time_pct ))
     if   [ "$delta" -gt 40 ]; then echo "$RED"
-    elif [ "$delta" -gt 30 ]; then echo "$PINK"
-    elif [ "$delta" -gt 22 ]; then echo "$MAGENTA"
-    elif [ "$delta" -gt 15 ]; then echo "$ORANGE"
-    elif [ "$delta" -gt 8 ]; then echo "$GOLD"
-    elif [ "$delta" -gt 2 ]; then echo "$YELLOW"
-    elif [ "$delta" -gt -4 ]; then echo "$LIME"
-    elif [ "$delta" -gt -10 ]; then echo "$GREEN"
-    elif [ "$delta" -gt -18 ]; then echo "$TEAL"
+    elif [ "$delta" -gt 30 ]; then echo "$SCARLET"
+    elif [ "$delta" -gt 22 ]; then echo "$ORANGE"
+    elif [ "$delta" -gt 15 ]; then echo "$GOLD"
+    elif [ "$delta" -gt 8 ]; then echo "$YELLOW"
+    elif [ "$delta" -gt 2 ]; then echo "$LIME"
+    elif [ "$delta" -gt -4 ]; then echo "$GREEN"
+    elif [ "$delta" -gt -10 ]; then echo "$TEAL"
+    elif [ "$delta" -gt -18 ]; then echo "$SKY"
     elif [ "$delta" -gt -28 ]; then echo "$CYAN"
     else echo "$BLUE"; fi
   else
