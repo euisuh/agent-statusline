@@ -100,10 +100,13 @@ FILLED=$(( (CTX_PCT * BAR_WIDTH + 50) / 100 ))
 EMPTY=$(( BAR_WIDTH - FILLED ))
 BAR_FILLED=""
 BAR_EMPTY=""
-i=0
-while [ "$i" -lt "$FILLED" ]; do BAR_FILLED+="█"; i=$(( i + 1 )); done
-i=0
-while [ "$i" -lt "$EMPTY" ]; do BAR_EMPTY+="░"; i=$(( i + 1 )); done
+if [ "$CTX_PCT" -ge 98 ]; then
+  i=0; while [ "$i" -lt $(( BAR_WIDTH - 1 )) ]; do BAR_FILLED+="█"; i=$(( i + 1 )); done
+  BAR_FILLED+="▶"
+else
+  i=0; while [ "$i" -lt "$FILLED" ]; do BAR_FILLED+="█"; i=$(( i + 1 )); done
+  i=0; while [ "$i" -lt "$EMPTY" ]; do BAR_EMPTY+="░"; i=$(( i + 1 )); done
+fi
 
 # Context color based on usage, five stages from plenty left to nearly full
 if [ "$CTX_PCT" -lt 25 ]; then
@@ -264,9 +267,14 @@ rl_bar() {
   local empty=$(( 8 - filled ))
   local bar=""
   local i=0
-  while [ "$i" -lt "$filled" ]; do bar+="▪"; i=$(( i + 1 )); done
-  i=0
-  while [ "$i" -lt "$empty" ]; do bar+="·"; i=$(( i + 1 )); done
+  if [ "$pct_int" -ge 98 ]; then
+    while [ "$i" -lt 7 ]; do bar+="▪"; i=$(( i + 1 )); done
+    bar+="▶"
+  else
+    while [ "$i" -lt "$filled" ]; do bar+="▪"; i=$(( i + 1 )); done
+    i=0
+    while [ "$i" -lt "$empty" ]; do bar+="·"; i=$(( i + 1 )); done
+  fi
   echo "$bar"
 }
 
