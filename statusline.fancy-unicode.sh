@@ -26,6 +26,8 @@ RED="\033[91m"
 MAGENTA="\033[95m"
 BLUE="\033[94m"
 GRAY="\033[90m"
+ORANGE="\033[38;5;208m"
+TEAL="\033[38;5;36m"
 
 # ── Extract Fields ───────────────────────────────────────
 FIELDS=()
@@ -266,12 +268,16 @@ rl_bar() {
 # Helper: color for rate limit (simple threshold fallback)
 rl_color() {
   local pct_int=$(pct_int "$1")
-  if   [ "$pct_int" -ge 80 ]; then echo "$RED"
+  if   [ "$pct_int" -ge 95 ]; then echo "$RED"
+  elif [ "$pct_int" -ge 80 ]; then echo "$ORANGE"
+  elif [ "$pct_int" -ge 65 ]; then echo "$MAGENTA"
   elif [ "$pct_int" -ge 50 ]; then echo "$YELLOW"
-  else echo "$GREEN"; fi
+  elif [ "$pct_int" -ge 35 ]; then echo "$GREEN"
+  elif [ "$pct_int" -ge 20 ]; then echo "$TEAL"
+  else echo "$CYAN"; fi
 }
 
-# Helper: time-paced color — green=under, yellow=on, red=over schedule
+# Helper: time-paced color — cool=under, yellow=on/near, warm=over schedule
 # Args: usage_pct reset_at_epoch window_secs
 rl_color_timed() {
   local usage_int=$(pct_int "$1")
@@ -283,10 +289,12 @@ rl_color_timed() {
     [ "$elapsed" -lt 0 ] && elapsed=0
     local time_pct=$(( elapsed * 100 / window ))
     local delta=$(( usage_int - time_pct ))
-    if   [ "$delta" -gt 30 ]; then echo "$RED"
+    if   [ "$delta" -gt 35 ]; then echo "$RED"
+    elif [ "$delta" -gt 20 ]; then echo "$ORANGE"
     elif [ "$delta" -gt 10 ]; then echo "$MAGENTA"
-    elif [ "$delta" -gt -10 ]; then echo "$YELLOW"
-    elif [ "$delta" -gt -30 ]; then echo "$GREEN"
+    elif [ "$delta" -gt 0 ]; then echo "$YELLOW"
+    elif [ "$delta" -gt -10 ]; then echo "$GREEN"
+    elif [ "$delta" -gt -25 ]; then echo "$TEAL"
     else echo "$CYAN"; fi
   else
     rl_color "$1"
