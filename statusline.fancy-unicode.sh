@@ -94,7 +94,7 @@ fi
 
 # Context bar (12 chars wide)
 BAR_WIDTH=12
-FILLED=$(( CTX_PCT * BAR_WIDTH / 100 ))
+FILLED=$(( (CTX_PCT * BAR_WIDTH + 50) / 100 ))
 [ "$FILLED" -gt "$BAR_WIDTH" ] && FILLED="$BAR_WIDTH"
 [ "$FILLED" -lt 0 ] && FILLED=0
 EMPTY=$(( BAR_WIDTH - FILLED ))
@@ -258,7 +258,7 @@ fmt_reset() {
 rl_bar() {
   local pct="${1:-0}"
   local pct_int=$(pct_int "$pct")
-  local filled=$(( pct_int * 8 / 100 ))
+  local filled=$(( (pct_int * 8 + 50) / 100 ))
   [ "$filled" -gt 8 ] && filled=8
   [ "$filled" -lt 0 ] && filled=0
   local empty=$(( 8 - filled ))
