@@ -306,6 +306,7 @@ rl_color_timed() {
     local now=$(date +%s)
     local elapsed=$(( window - (reset_at - now) ))
     [ "$elapsed" -lt 0 ] && elapsed=0
+    [ "$elapsed" -gt "$window" ] && elapsed=$window
     local time_pct=$(( elapsed * 100 / window ))
     local delta=$(( usage_int - time_pct ))
     if   [ "$delta" -gt 40 ]; then echo "$RED"
