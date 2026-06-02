@@ -187,7 +187,7 @@ if [ -n "$CAVEMAN_MODE" ]; then
 fi
 LINE1+="${BOLD}${MAGENTA}${MODEL_SHORT}${RESET}"
 LINE1+="$SEP"
-LINE1+="${CTX_COLOR}[${BAR_FILLED}${BAR_EMPTY}] ${CTX_PCT_FMT}${RESET}${GRAY}/${CTX_SIZE_FMT}${RESET}"
+LINE1+="${CTX_COLOR}[${BAR_FILLED}${DIM}${BAR_EMPTY}${RESET}${CTX_COLOR}] ${CTX_PCT_FMT}${RESET}${GRAY}/${CTX_SIZE_FMT}${RESET}"
 LINE1+="$SEP"
 LINE1+="${COST_COLOR}\$${COST_FMT}${RESET}"
 LINE1+="$SEP"
@@ -266,6 +266,7 @@ rl_bar() {
   local bar=""
   local i=0
   while [ "$i" -lt "$filled" ]; do bar+="#"; i=$(( i + 1 )); done
+  [ "$empty" -gt 0 ] && bar+="${DIM}"
   i=0
   while [ "$i" -lt "$empty" ]; do bar+="-"; i=$(( i + 1 )); done
   echo "$bar"
@@ -349,7 +350,7 @@ if [ -n "$RL5H_PCT" ]; then
   RL5H_BAR=$(rl_bar "$RL5H_PCT")
   RL5H_RESET_FMT=""
   [ -n "$RL5H_RESET" ] && RL5H_RESET_FMT=" ${GRAY}->${RESET} ${CYAN}$(fmt_reset "$RL5H_RESET")${RESET}"
-  LINE3+="${GRAY}5h ${RESET}${RL5H_COLOR}[${RL5H_BAR}] $(fmt_pct $RL5H_INT)${RESET}${RL5H_RESET_FMT}"
+  LINE3+="${GRAY}5h ${RESET}${RL5H_COLOR}[${RL5H_BAR}${RESET}${RL5H_COLOR}] $(fmt_pct $RL5H_INT)${RESET}${RL5H_RESET_FMT}"
 fi
 
 # ── 7-day rate limit ──────────────────────────────────────
@@ -360,7 +361,7 @@ if [ -n "$RL7D_PCT" ]; then
   RL7D_RESET_FMT=""
   [ -n "$RL7D_RESET" ] && RL7D_RESET_FMT=" ${GRAY}->${RESET} ${CYAN}$(fmt_reset "$RL7D_RESET")${RESET}"
   [ -n "$LINE3" ] && LINE3+="$SEP"
-  LINE3+="${GRAY}7d ${RESET}${RL7D_COLOR}[${RL7D_BAR}] $(fmt_pct $RL7D_INT)${RESET}${RL7D_RESET_FMT}"
+  LINE3+="${GRAY}7d ${RESET}${RL7D_COLOR}[${RL7D_BAR}${RESET}${RL7D_COLOR}] $(fmt_pct $RL7D_INT)${RESET}${RL7D_RESET_FMT}"
 fi
 
 if [ -z "$LINE3" ]; then
