@@ -12,6 +12,13 @@ if [ -f "$CAVEMAN_FLAG" ]; then
   CAVEMAN_MODE=$(tr -d '[:space:]' < "$CAVEMAN_FLAG" 2>/dev/null | tr '[:lower:]' '[:upper:]')
 fi
 
+# ── Ponytail State ───────────────────────────────────────
+PONYTAIL_FLAG="$HOME/.claude/.ponytail-active"
+PONYTAIL_MODE=""
+if [ -f "$PONYTAIL_FLAG" ]; then
+  PONYTAIL_MODE=$(head -n1 "$PONYTAIL_FLAG" 2>/dev/null | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+fi
+
 # ── Colors ──────────────────────────────────────────────
 RESET="\033[0m"
 BOLD=""
@@ -47,6 +54,7 @@ PINK="\033[38;5;198m"
   IFS= read -r RL5H_RESET
   IFS= read -r RL7D_PCT
   IFS= read -r RL7D_RESET
+  IFS= read -r SESSION_NAME
 } < <(jq -r '
   (.model.display_name // "unknown"),
   ((.context_window.used_percentage // 0) | floor | tostring),
@@ -61,7 +69,8 @@ PINK="\033[38;5;198m"
   (.rate_limits.five_hour.used_percentage // ""),
   (.rate_limits.five_hour.resets_at // ""),
   (.rate_limits.seven_day.used_percentage // ""),
-  (.rate_limits.seven_day.resets_at // "")
+  (.rate_limits.seven_day.resets_at // ""),
+  (.session_name // "")
 ' <<< "$input")
 
 # ── Derived Values ───────────────────────────────────────
@@ -164,6 +173,14 @@ if [ -n "$CAVEMAN_MODE" ]; then
   fi
   LINE1+="$SEP"
 fi
+if [ -n "$PONYTAIL_MODE" ]; then
+  if [ "$PONYTAIL_MODE" = "FULL" ]; then
+    LINE1+="${BOLD}\033[38;5;108m[PONYTAIL]${RESET}"
+  else
+    LINE1+="${BOLD}\033[38;5;108m[PONYTAIL:${PONYTAIL_MODE}]${RESET}"
+  fi
+  LINE1+="$SEP"
+fi
 LINE1+="${BOLD}${MAGENTA}${MODEL_SHORT}${RESET}"
 LINE1+="$SEP"
 LINE1+="${CTX_COLOR}[${BAR_FILLED}${BAR_EMPTY}] ${CTX_PCT_FMT}${RESET}${GRAY}/${CTX_SIZE_FMT}${RESET}"
@@ -212,6 +229,8 @@ if $IS_GIT; then
 else
   LINE2+="${BOLD}${BLUE}[/] ${FOLDER}${RESET}${GRAY} (no git)${RESET}"
 fi
+
+[ -n "$SESSION_NAME" ] && LINE2+="${SEP}${GRAY}#${SESSION_NAME}${RESET}"
 
 # ── Line 3: Usage / Rate Limits ──────────────────────────
 LINE3=""
