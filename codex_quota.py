@@ -43,17 +43,23 @@ def fetch_quota():
         raw = json.loads(r.read())
 
     rl = raw.get("rate_limit", {})
-    pw = rl.get("primary_window", {})
-    sw = rl.get("secondary_window", {})
+    # API sends explicit `null` for a window with no data, not a missing key —
+    # `.get(key, {})` doesn't catch that, only `or {}` does.
+    pw = rl.get("primary_window") or {}
+    sw = rl.get("secondary_window") or {}
 
     result = {
         "_cached_at": time.time(),
         "primary_pct": pw.get("used_percent", 0),
         "primary_reset_secs": pw.get("reset_after_seconds", 0),
         "primary_reset_at": pw.get("reset_at", 0),
+        "primary_window_secs": pw.get("limit_window_seconds", 0),
+        "has_primary": bool(pw),
         "secondary_pct": sw.get("used_percent", 0),
         "secondary_reset_secs": sw.get("reset_after_seconds", 0),
         "secondary_reset_at": sw.get("reset_at", 0),
+        "secondary_window_secs": sw.get("limit_window_seconds", 0),
+        "has_secondary": bool(sw),
         "limit_reached": rl.get("limit_reached", False),
         "plan_type": raw.get("plan_type", "unknown"),
     }
