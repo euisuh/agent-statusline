@@ -55,6 +55,32 @@ The current version uses:
 
 ![Colored Unicode statusline preview](assets/statusline-fancy-unicode.svg)
 
+## Requirements
+
+`bash` and `jq`. `codex_quota.py` needs Python 3 and is optional.
+
+## Try it without Claude
+
+The script reads the JSON Claude Code sends on stdin. Run it by hand:
+
+```sh
+echo '{"model":{"display_name":"Sonnet 4.6"},"context_window":{"used_percentage":58,"context_window_size":200000},"cost":{"total_cost_usd":0.123,"total_duration_ms":724000},"workspace":{"current_dir":"/tmp"},"rate_limits":{"five_hour":{"used_percentage":37,"resets_at":1999999999}}}' | bash statusline.ascii-current.sh
+```
+
+Output (ANSI colors stripped; the reset timer depends on the current time):
+
+```text
+Sonnet 4.6 | [#######-----]  58%/200k | $0.123 | 12m04s
+[/] tmp (no git)
+(C) 5h [###-----]  37% -> ...
+```
+
+## Tests
+
+`bash tests/test.sh` feeds sample and empty JSON to both scripts and checks the
+exit code and key fields. CI also runs `shellcheck -S error` on the scripts.
+Warnings at the default severity are not yet fixed.
+
 ## Install
 
 Copy the script you want into `~/.claude/statusline.sh` and make it executable.
@@ -185,3 +211,7 @@ Keep the visible characters fixed-width if you care about stable rendering.
 - This repo does not contain secrets.
 - The settings example is sanitized and does not include personal hooks or paths.
 - The statusline command assumes Claude can execute `bash ~/.claude/statusline.sh`.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
