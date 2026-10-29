@@ -1,0 +1,13 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck (errors only)
+        run: shellcheck -S error statusline.*.sh tests/test.sh
+      - name: python syntax
+        run: python3 -m py_compile codex_quota.py
+      - name: sample-input test
+        run: bash tests/test.sh
